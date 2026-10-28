@@ -1,0 +1,47 @@
+--- a/services/identity/src/main/java/com/crapi/controller/VehicleController.java
++++ b/services/identity/src/main/java/com/crapi/controller/VehicleController.java
+@@ -16,6 +16,7 @@
+ 
+ import com.crapi.constant.UserMessage;
+ import com.crapi.entity.VehicleDetails;
++import com.crapi.repository.VehicleDetailsRepository;
+ import com.crapi.model.CRAPIResponse;
+ import com.crapi.model.VehicleForm;
+ import com.crapi.model.VehicleLocationResponse;
+@@ -25,6 +26,7 @@
+ import jakarta.servlet.http.HttpServletRequest;
+ import jakarta.validation.Valid;
+ import java.util.List;
++import java.security.Principal;
+ import java.util.UUID;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.http.HttpStatus;
+@@ -37,6 +39,8 @@
+ public class VehicleController {
+ 
+   @Autowired VehicleService vehicleService;
++
++  @Autowired VehicleDetailsRepository vehicleDetailsRepository;
+ 
+   @Autowired VehicleOwnershipService vehicleOwnershipService;
+ 
+@@ -106,7 +110,18 @@
+    * @return VehicleDetails on given car_id.
+    */
+   @GetMapping("/vehicle/{carId}/location")
+-  public ResponseEntity<?> getLocationBOLA(@PathVariable("carId") UUID carId) {
++  public ResponseEntity<?> getLocationBOLA(
++      @PathVariable("carId") UUID carId, Principal principal) {
++    // Local teaching patch: authorize the authenticated principal for this object.
++    VehicleDetails vehicle = vehicleDetailsRepository.findByUuid(carId);
++    if (principal == null
++        || vehicle == null
++        || vehicle.getOwner() == null
++        || !vehicle.getOwner().getEmail().equals(principal.getName())) {
++      // Conceal the existence of another user's vehicle, as for an unknown UUID.
++      return ResponseEntity.status(HttpStatus.NOT_FOUND)
++          .body(new CRAPIResponse(UserMessage.DID_NOT_GET_VEHICLE_FOR_USER));
++    }
+     VehicleLocationResponse vehicleDetails = vehicleService.getVehicleLocation(carId);
+     if (vehicleDetails != null) return ResponseEntity.ok().body(vehicleDetails);
+     else

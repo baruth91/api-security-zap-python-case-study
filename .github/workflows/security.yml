@@ -1,0 +1,68 @@
+name: Scoped crAPI authorization and passive ZAP checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crapi-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  authorization:
+    name: Reproduce known BOLA and verify the local endpoint correction
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4
+        env:
+          POSTGRES_USER: qa_user
+          POSTGRES_PASSWORD: qa_demo_password
+          POSTGRES_DB: qa_lab
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -U qa_user -d qa_lab"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install pinned Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Check repository-owned code
+        run: |
+          python -m pip check
+          python -m ruff check .
+          python -m ruff format --check .
+      - name: Fetch verified tools and build the pinned original and patched services
+        run: python -m scripts.prepare
+      - name: Run real authorization matrix and passive observation
+        id: tests
+        env:
+          QA_DATABASE_URL: postgresql://qa_user:qa_demo_password@127.0.0.1:${{ job.services.postgres.ports[5432] }}/qa_lab
+        run: python -m pytest -v
+      - name: Upload sanitized evidence
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: scoped-crapi-security-evidence
+          path: |
+            reports/junit.xml
+            reports/baseline/
+          if-no-files-found: error
+          retention-days: 7

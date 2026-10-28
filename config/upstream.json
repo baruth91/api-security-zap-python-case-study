@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/OWASP/crAPI.git",
+  "revision": "700f03d12a392d9e408260b4beae72ed02a4a1a4",
+  "gradle_version": "8.14.3",
+  "gradle_url": "https://services.gradle.org/distributions/gradle-8.14.3-bin.zip",
+  "gradle_sha256": "bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531",
+  "zap_version": "2.17.0",
+  "zap_url": "https://github.com/zaproxy/zaproxy/releases/download/v2.17.0/ZAP_2.17.0_Crossplatform.zip",
+  "zap_sha256": "94c8f767b1c2e94f0db66b3ae56514d5e3f5a728ee1b6c798e0c8fe2d61fbff0"
+}

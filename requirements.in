@@ -1,0 +1,4 @@
+requests==2.34.2
+pytest==9.2.0
+psycopg[binary]==3.3.6
+ruff==0.17.3

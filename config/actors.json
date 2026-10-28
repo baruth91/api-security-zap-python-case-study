@@ -1,0 +1,16 @@
+{
+  "alice": {
+    "email": "test@example.com",
+    "password": "Test!123",
+    "vehicle_id": "1929186d-8b67-4163-a208-de52a41f7301",
+    "latitude": "38.206348",
+    "longitude": "-84.270172"
+  },
+  "bob": {
+    "email": "robot001@example.com",
+    "password": "robot001!123",
+    "vehicle_id": "4bae9968-ec7f-4de3-a3a0-ba1b2ab5e5e5",
+    "latitude": "37.746880",
+    "longitude": "-84.301460"
+  }
+}
