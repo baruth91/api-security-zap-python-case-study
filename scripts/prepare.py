@@ -64,6 +64,9 @@ def main():
         target = WORK / variant
         if not target.exists():
             shutil.copytree(source / "services/identity", target)
+            # The patch uses LF on every platform, including Windows checkouts.
+            controller = target / "src/main/java/com/crapi/controller/VehicleController.java"
+            controller.write_bytes(controller.read_bytes().replace(b"\r\n", b"\n"))
             if variant == "corrected":
                 run(
                     "git",
